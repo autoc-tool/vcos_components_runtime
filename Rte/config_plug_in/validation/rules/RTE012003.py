@@ -26,7 +26,7 @@ class Rte012003Rule(BasicRule):
         super().__init__()
         self.logs = logs
         self.validation_code = self.__class__.ruleset_name
-        self.validation_summary = "The MainFunction runnable in Schedulable Entities should be mapped"
+        self.validation_summary = ("RTE012003: BSW MainFunction (Schedulable Entities) must be mapped to an OsTask via RteEventToTaskMapping.")
         self.rte_common_data = rte_common_data
 
         self.bsw_ecuc_cfg_class_dict = validation_data.bsw_ecuc_dict
@@ -51,12 +51,28 @@ class Rte012003Rule(BasicRule):
                     mapped_status = runnable_instance['mapped_status']
                     param_path = runnable_instance['event_ref']
                     if not mapped_status:
+                        rte_path = f"/ActiveEcuC/Rte/{swc_name}"
                         self.vlog(
                             self.validation_code, self.validation_summary,
-                            f"swc category: {category_name}, swc name: {swc_name}, runnable name: {runnable_name}",
-                            param_path, "fail")
+                            (
+                                f"BSW MainFunction '{runnable_name}' of module '{swc_name}' "
+                                f"(Schedulable Entities) is not mapped to any OsTask. "
+                                f"Create RteEventToTaskMapping under {rte_path}: set RteEventRef "
+                                f"to the MainFunction trigger event ({param_path}) and "
+                                f"RteMappedToTaskRef to a periodic OsTask "
+                                f"(e.g. OsTask_Bsw_5ms / OsTask_Bsw_10ms)."
+                            ),
+                            param_path if param_path else rte_path,
+                            "fail",
+                            [],
+                            [
+                                f"Map {swc_name}/{runnable_name} to an OsTask via "
+                                f"Rte/{swc_name}/RteEventToTaskMapping "
+                                f"(RteEventRef + RteMappedToTaskRef)."
+                            ],
+                        )
                     else:
                         self.vlog(
                             self.validation_code, self.validation_summary,
-                            "swc category: {category_name}, swc name: {swc_name}, runnable name: {runnable_name}",
+                            f"swc={swc_name} runnable={runnable_name}: mapped.",
                             param_path, "pass")

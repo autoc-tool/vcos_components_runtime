@@ -49,23 +49,31 @@ class Rte013026Rule(BasicRule):
                     continue
 
                 if "RteBswEventToTaskMapping" in instance_item['DefinitionRef']:
-                    event_name = instance_item['RteBswUsedOsEventRef']['ValueRef']
-                    activation_offset = instance_item['RteBswActivationOffset']['Value']
-                    param_path = instance_item['RteBswMappedToTaskRef']['reference_item_path']
+                    # RteBswUsedOsEventRef is optional (Alarm-only mappings omit it)
+                    event_ref = instance_item.get('RteBswUsedOsEventRef')
+                    event_name = event_ref.get('ValueRef') if isinstance(event_ref, dict) else None
+                    offset_node = instance_item.get('RteBswActivationOffset')
+                    activation_offset = offset_node.get('Value') if isinstance(offset_node, dict) else None
+                    mapped = instance_item.get('RteBswMappedToTaskRef') or {}
+                    param_path = mapped.get('reference_item_path') or ''
                     find_pos = param_path.rfind("/")
-                    param_path = param_path[0:find_pos] + '/RteBswActivationOffset'
+                    param_path = (param_path[0:find_pos] + '/RteBswActivationOffset') if find_pos >= 0 else param_path
 
                 elif "RteEventToTaskMapping" in instance_item['DefinitionRef']:
-                    event_name = instance_item['RteUsedOsEventRef']['ValueRef']
-                    activation_offset = instance_item['RteActivationOffset']['Value']
-                    param_path = instance_item['RteMappedToTaskRef']['reference_item_path']
+                    # RteUsedOsEventRef is optional (Alarm-only mappings omit it)
+                    event_ref = instance_item.get('RteUsedOsEventRef')
+                    event_name = event_ref.get('ValueRef') if isinstance(event_ref, dict) else None
+                    offset_node = instance_item.get('RteActivationOffset')
+                    activation_offset = offset_node.get('Value') if isinstance(offset_node, dict) else None
+                    mapped = instance_item.get('RteMappedToTaskRef') or {}
+                    param_path = mapped.get('reference_item_path') or ''
                     find_pos = param_path.rfind("/")
-                    param_path = param_path[0:find_pos] + '/RteActivationOffset'
+                    param_path = (param_path[0:find_pos] + '/RteActivationOffset') if find_pos >= 0 else param_path
                 else:
                     continue
 
-                # NOTE: 如果event_name为空，则直接忽略
-                if event_name is None:
+                # NOTE: 如果event_name为空/缺失，则直接忽略（optional OsEvent ref）
+                if event_name is None or event_name in ('', '<empty>'):
                     continue
                 # NOTE: 如果activation_offset为空，则默认值为0
                 if activation_offset in (None, 'empty', ""):
