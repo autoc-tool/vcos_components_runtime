@@ -1,0 +1,38 @@
+{
+    "ECUC011001": {
+        "rule_name": "ECUC011001",
+        "rule_type": "repeatability_check",
+        "rule_summary": "Repeatablity check of EcucCoreId.",
+        "rule_message": "/AUTOSAR/EcucDefs/EcuC/EcucHardware/EcucCoreDefinition/EcucCoreId should be unique.",
+        "rule_ruleset": {
+            "mod_path": "/AUTOSAR/EcucDefs/EcuC/EcucHardware/EcucCoreDefinition/EcucCoreId",
+            "base_path": "/AUTOSAR/EcucDefs/EcuC/EcucHardware"
+        },
+        "auto_solve_list": [],
+        "manual_solve_list": []
+    },
+    "ECUC011002": {
+        "rule_name": "ECUC011002",
+        "rule_type": "repeatability_check",
+        "rule_summary": "Repeatablity check of EcucCoreHwRef.",
+        "rule_message": "/AUTOSAR/EcucDefs/EcuC/EcucHardware/EcucCoreDefinition/EcucCoreHwRef should be unique.",
+        "rule_ruleset": {
+            "mod_path": "/AUTOSAR/EcucDefs/EcuC/EcucHardware/EcucCoreDefinition/EcucCoreHwRef",
+            "base_path": "/AUTOSAR/EcucDefs/EcuC/EcucHardware"
+        },
+        "auto_solve_list": [],
+        "manual_solve_list": []
+    },
+    "ECUC013002": {
+        "rule_name": "ECUC013002",
+        "rule_type": "repeatability_check",
+        "rule_summary": "Repeatablity check of EcucPartitionSoftwareComponentInstanceRef.",
+        "rule_message": "The swc component should only be referred by one ecuc partition.",
+        "rule_ruleset": {
+            "mod_path": "/AUTOSAR/EcucDefs/EcuC/EcucPartitionCollection/EcucPartition/EcucPartitionSoftwareComponentInstanceRef",
+            "base_path": "/AUTOSAR/EcucDefs/EcuC/EcucPartitionCollection"
+        },
+        "auto_solve_list": [],
+        "manual_solve_list": []
+    }
+}

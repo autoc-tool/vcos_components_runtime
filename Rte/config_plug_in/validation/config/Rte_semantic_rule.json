@@ -1,0 +1,72 @@
+{
+    "RTE012001": {
+        "rule_name": "RTE012001",
+        "rule_type": "same_container_linkage_check",
+        "rule_summary": "The linkage check of RteExclusiveAreaImplMechanism and RteExclusiveAreaOsResourceRef.",
+        "rule_message": "If RteExclusiveAreaImplMechanism is 'OS_RESOURCE', then RteExclusiveAreaOsResourceRef must be configured.",
+        "rule_ruleset": {
+            "ruleset_01": {
+                "base_path": "/AUTOSAR/EcucDefs/Rte/RteBswModuleInstance/RteBswExclusiveAreaImpl",
+                "condition": [
+                    {
+                        "mod_path": "/AUTOSAR/EcucDefs/Rte/RteBswModuleInstance/RteBswExclusiveAreaImpl/RteExclusiveAreaImplMechanism",
+                        "value_operator": "==",
+                        "value": "OS_RESOURCE",
+                        "logical_operator": "and"
+                    }
+                ],
+                "judgement": [
+                    {
+                        "mod_path": "/AUTOSAR/EcucDefs/Rte/RteBswModuleInstance/RteBswExclusiveAreaImpl/RteExclusiveAreaOsResourceRef",
+                        "value_operator": "==",
+                        "value": "<empty>",
+                        "logical_operator": "or"
+                    },
+                    {
+                        "mod_path": "/AUTOSAR/EcucDefs/Rte/RteBswModuleInstance/RteBswExclusiveAreaImpl/RteExclusiveAreaOsResourceRef",
+                        "value_operator": "==",
+                        "value": null,
+                        "logical_operator": "or"
+                    }
+                ]
+            }
+        },
+        "manual_solve_list": ["Please select a valid reference in the pop-up window after clicking '[...]'"]
+    },
+    "RTE013006": {
+        "rule_name": "RTE013006",
+        "rule_type": "diff_container_linkage_check",
+        "rule_summary": "The linkage check of OsSupportEventExtended and OsTaskEventRef.",
+        "rule_message": "If OsSupportEventExtended is selected, the number of events referenced by each Task cannot exceed 56, otherwise it cannot exceed 24.",
+        "rule_ruleset": {
+            "ruleset_01": {
+                "judgement": {
+                    "mod_path": [
+                        "/AUTOSAR/EcucDefs/Os/OsGeneral/OsSupportEventExtended",
+                        "/AUTOSAR/EcucDefs/Os/OsTask/OsTaskEventRef"
+                    ],
+                    "judge_expression": "(%0 is False and (not %1 or not isinstance(%1, list) or len(%1) <= 24)) or (%0 is True and (not %1 or not isinstance(%1, list) or len(%1) <= 56))"
+                }
+            }
+        }
+    },
+    "RTE013016": {
+        "rule_name": "RTE013016",
+        "rule_type": "same_container_linkage_check",
+        "rule_summary": "RteExclusiveAreaImplMechanism config check",
+        "rule_message": "The RteExclusiveAreaImplMechanism can not use 'OS_SPINLOCK' in swc case.",
+        "rule_ruleset": {
+            "ruleset_01": {
+                "base_path": "/AUTOSAR/EcucDefs/Rte/RteSwComponentInstance/RteExclusiveAreaImplementation",
+                "judgement": [
+                    {
+                        "mod_path": "/AUTOSAR/EcucDefs/Rte/RteSwComponentInstance/RteExclusiveAreaImplementation/RteExclusiveAreaImplMechanism",
+                        "value_operator": "!=",
+                        "value": "OS_SPINLOCK",
+                        "logical_operator": "and"
+                    }
+                ]
+            }
+        }
+    }
+}
