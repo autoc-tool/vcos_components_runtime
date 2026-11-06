@@ -31,7 +31,7 @@ class Rte013002Rule(BasicRule):
         super().__init__()
         self.logs = logs
         self.validation_code = self.__class__.ruleset_name
-        self.validation_summary = "The swc in Application Components should at least have one mapped runnable or reffered by one ecuc partition "
+        self.validation_summary = ("RTE013002: Each Application SWC must have ≥1 runnable mapped to an OsTask, or be referenced by an EcucPartition.")
 
         self.bsw_ecuc_cfg_class_dict = validation_data.bsw_ecuc_dict
         self.rte_common_data = rte_common_data
@@ -54,17 +54,41 @@ class Rte013002Rule(BasicRule):
             if category_name not in category_name_list:
                 continue
             for swc_name, swc_instance in category_instance.items():
+                # PARAMETER-SW-COMPONENT-TYPE (and similar) have no runnables; skip rather than
+                # referencing unbound runnable_name after an empty loop.
+                if not swc_instance:
+                    continue
                 swc_mapped_status = False
+                runnable_name = ""
                 index = 0
                 for runnable_name, runnable_instance in swc_instance.items():
                     mapped_status = runnable_instance['mapped_status']
                     swc_mapped_status = swc_mapped_status or mapped_status
                     index += 1
 
-                message = f"swc category: {category_name}, swc name: {swc_name} runnable name: {runnable_name}"
-                path = f"{category_name}_{swc_name}_{runnable_name}"
+                path = f"/ActiveEcuC/Rte/{swc_name}"
 
                 if not swc_mapped_status and len(self.swc_osa_from_ep.get(swc_name, [])) == 0:
-                    self.vlog(self.validation_code, self.validation_summary, message, path, "fail")
+                    self.vlog(
+                        self.validation_code, self.validation_summary,
+                        (
+                            f"SWC '{swc_name}' ({category_name}) has no runnable mapped to any OsTask "
+                            f"and is not referenced by any EcucPartition. "
+                            f"Map at least one runnable (e.g. '{runnable_name}') via "
+                            f"RteEventToTaskMapping under {path}, or add an EcucPartition "
+                            f"ref to this SWC."
+                        ),
+                        path,
+                        "fail",
+                        [],
+                        [
+                            f"Map ≥1 runnable of {swc_name} to an OsTask "
+                            f"(Rte/{swc_name}/RteEventToTaskMapping), or reference the SWC "
+                            f"from EcucPartition."
+                        ],
+                    )
                 else:
-                    self.vlog(self.validation_code, self.validation_summary, message, path, "pass")
+                    self.vlog(
+                        self.validation_code, self.validation_summary,
+                        f"swc={swc_name}: has mapped runnable or EcucPartition ref.",
+                        path, "pass")

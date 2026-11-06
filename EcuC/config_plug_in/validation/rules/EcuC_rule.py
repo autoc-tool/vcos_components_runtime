@@ -16,7 +16,7 @@
 import importlib
 from func_module.validation.common.validation_def import ValidationData, ExceptionRuleLog
 
-VALIDATE_MARK_LIST = ["011003"]
+VALIDATE_MARK_LIST = ["011003", "014003"]
 
 
 class EcuCRule:
