@@ -15,10 +15,14 @@
 ############################################################################
 from func_module.validation.common.basic_rule import BasicRule, timing_decorator
 from func_module.validation.common.validation_def import ValidationData
-from basic_func_module.autosar_utils.utils import get_definition_ref, get_short_name, get_value_ref, get_valueOf
+from basic_func_module.autosar_utils.utils import get_short_name, get_value_ref
 from .Rte_common import RteCommonData
 
 RTE_SWC_INSTANCE_SUFFIX = "_EcuSwComposition"
+
+
+def _text(obj, attr):
+    return getattr(getattr(obj, attr, None), "valueOf_", None) or ""
 
 
 # RteSwComponentInstance "<SwcType>_EcuSwComposition" is the Rte configuration of SwcType (task mapping binds its
@@ -57,24 +61,24 @@ class Rte016004Rule(BasicRule):
         paths = []
         for search_obj in self.search_objs:
             for proto in search_obj.find_nodes("SW-COMPONENT-PROTOTYPE"):
-                if (get_valueOf(proto.TYPE_TREF) or "").split("/")[-1] == swc_type:
+                if _text(proto, "TYPE_TREF").split("/")[-1] == swc_type:
                     paths.append(proto.get_path())
         return sorted(set(paths))
 
     @timing_decorator
     def validation_run(self):
         rte_cfg = self.rte_autosar.find("/ActiveEcuC/Rte")
-        containers = getattr(getattr(rte_cfg, "CONTAINERS", None), "ECUC_CONTAINER_VALUE", [])
+        containers = getattr(getattr(rte_cfg, "CONTAINERS", None), "ECUC_CONTAINER_VALUE", None) or []
         for container in containers:
-            if not (get_definition_ref(container) or "").endswith("/RteSwComponentInstance"):
+            if not _text(container, "DEFINITION_REF").endswith("/RteSwComponentInstance"):
                 continue
             instance_name = get_short_name(container)
             if not instance_name.endswith(RTE_SWC_INSTANCE_SUFFIX):
                 continue
             swc_type = instance_name[: -len(RTE_SWC_INSTANCE_SUFFIX)]
-            refs = getattr(getattr(container, "REFERENCE_VALUES", None), "ECUC_REFERENCE_VALUE", [])
+            refs = getattr(getattr(container, "REFERENCE_VALUES", None), "ECUC_REFERENCE_VALUE", None) or []
             for ref in refs:
-                if not (get_definition_ref(ref) or "").endswith("/RteSoftwareComponentInstanceRef"):
+                if not _text(ref, "DEFINITION_REF").endswith("/RteSoftwareComponentInstanceRef"):
                     continue
                 target = get_value_ref(ref)
                 if not target:
@@ -83,7 +87,7 @@ class Rte016004Rule(BasicRule):
                 proto = self.find_prototype(target)
                 if proto is None:
                     continue
-                proto_type = (get_valueOf(proto.TYPE_TREF) or "").split("/")[-1]
+                proto_type = _text(proto, "TYPE_TREF").split("/")[-1]
                 if proto_type == swc_type:
                     self.vlog(
                         self.validation_code,
@@ -93,6 +97,9 @@ class Rte016004Rule(BasicRule):
                         "pass",
                     )
                     continue
+                target_desc = (
+                    f"a prototype of SWC type '{proto_type}'" if proto_type else "a prototype without TYPE-TREF"
+                )
                 candidates = self.prototypes_of_type(swc_type)
                 fix = (
                     f"Set {param_path} to {' or '.join(candidates)}"
@@ -103,7 +110,7 @@ class Rte016004Rule(BasicRule):
                     self.validation_code,
                     self.validation_summary,
                     (
-                        f"{param_path} references {target}, a prototype of SWC type '{proto_type}', but "
+                        f"{param_path} references {target}, {target_desc}, but "
                         f"{instance_name} configures SWC type '{swc_type}'. {fix}."
                     ),
                     param_path,
